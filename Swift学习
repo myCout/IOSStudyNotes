@@ -1,0 +1,50 @@
+Xcode 新建的工程真机运行会默认为3.5的尺寸，修改方式为：General->App Icons and Launch Images ->Launch Images Source:改为LaunchImage。
+
+Swift学习
+声明常量和变量
+用 let 声明常量；
+用 var 声明变量；
+
+类型标注:
+var welcomeMessage:String  --冒号代表着“是...类型”
+
+注:如果声明常量或者变量的时候赋了一个初始值，Swift可以推断出这个常量或者变量的类型。
+
+var friendlyWelcome = "hello!"
+println(friendlyWelcome)
+
+exp:let pi = 3.14159 --Swift总是会选择Doubel 而不是Float。如果表达式中同时出现了整数和浮点数，会被推断为Double类型。
+数值型字面量
+一个十进制数，没有前缀;
+一个二进制数，前缀是0b;
+一个八进制数，前缀是0o;
+一个十六进制数，前缀是0x;
+
+类型别名
+
+typealias AudioSample = UInt16
+var maxAmplitudeFound = AudioSample.min
+
+元组
+元组(tuples)把多个值组合成一个复合值。元组内的值可以是任意类型，并不要求是相同类型。
+let http404Error = (404,"Not Found")
+(404,"Not Found") 元组把一个Int值和一个String 值组合起来，表示HTTP状态码的两个部分:一个数字和一个人类可读的描述。这个元组可以被描述为"一个类型为(Int,String)的元组"。
+你可以将一个元组的内容分解（decompose）成单独的常量和变量，然后你就可以正常使用它们了：
+let (statusCode, statusMessage) = http404Error
+println("The status code is \(statusCode)")
+如果你只需要一部分元组值，分解的时候可以把要忽略的部分用下划线（_）标记：
+let (justTheStatusCode,_) = http404Error
+println("The status code is \(justTheStatusCode)")
+此外，还可以通过下标来访问元组中的单个元素，下标从零开始
+println("The status code is \(http404Error,0)")
+可以在定义元组的时候给单个元素命名:
+let http200Status = (statusCode:200,description:"OK")
+println("The status code is \http200Status.statusCode")
+println("The status description is \http200Status.description")
+
+可以选绑定:
+使用可选绑定来判断可选类型是否包含值，如果包含就把值付给一个临时变量或者变量
+
+
+
+

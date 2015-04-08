@@ -1,0 +1,68 @@
+常用
+18629512538
+hyw860323
+
+常用代码
+
+#pragma mark - 去掉多余的线
+- (void)clipExtraCellLine:(UITableView *)tableView{
+    UIView *view = [[UIView alloc] init];
+    view.backgroundColor = [UIColor clearColor];
+    [self.tableView setTableFooterView:view];
+}
+
+
+#pragma mark - Touch events
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+    [self.view.window endEditing:YES];
+}
+
+-(void)initLeftButton
+{
+    UIButton *lbtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    [lbtn setFrame:CGRectMake(10, 2, 40, 40)];
+    [lbtn setTitle:@"取消" forState:UIControlStateNormal];
+    lbtn.titleLabel.font = [UIFont systemFontOfSize:15.0];
+    [lbtn addTarget:self action:@selector(leftAction:) forControlEvents:UIControlEventTouchUpInside];
+    [_navView addSubview:lbtn];
+}
+
+//创建一个左边的button
+    goHomeButton = [[UIButton alloc] initWithFrame:CGRectMake(0.0, 50.0, 44, 44)];
+	[goHomeButton setImage:[UIImage imageNamed:@"主页返回.png"] forState:UIControlStateNormal];
+	[goHomeButton addTarget:self action:@selector(goHomeButtonClick) forControlEvents:UIControlEventTouchUpInside];
+	UIBarButtonItem *previousStepBarBtn = [[UIBarButtonItem alloc] initWithCustomView:goHomeButton];
+	self.navigationItem.leftBarButtonItem = previousStepBarBtn;
+
+	//        UINavigationController *navigationController =
+//        [[UINavigationController alloc] initWithRootViewController:addNewFriend];
+//        [mAppDelegate.hTabRootController presentViewController:navigationController animated:YES completion:NULL];
+
+NSString*flag = [_Des TripleDES:[responseData objectForKey:@"flag"] encryptOrDecrypt:kCCDecrypt key:[SystemConfigUtil calculateDefaultDESKEY] andIV:[SystemConfigUtil calculateDefaultDESIV]];
+                if (flag.integerValue == 1) {
+                    [[NSNotificationCenter defaultCenter] postNotificationName:HReloadFriendList object:nil];
+                    [self.navigationController popToRootViewControllerAnimated:YES];
+                }else{
+                    mAlertView(@"提示", @"删除好友失败");
+                }
+
+//    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reSetCommunity:)name:HReSetCommunity object:nil];
+
+//响应通知中心NSNotificationCenter
+-(void)changeCity:(NSNotification *)notification
+{
+    if([notification object] != nil)
+    {
+        [_dataSource removeAllObjects];;
+        cityModel = [notification object];
+        NSLog(@"regionID = %@",cityModel.hRegionID);
+        [self showHudInView:self.view hint:@"切换城市中..."];
+        [self changeCityReloadCommunityList];
+    }
+}
+[[NSNotificationCenter defaultCenter]postNotificationName: HChangeHeadImage object:nil];
+
+版本更新接口，可用来测试网络
+//http://service-community-test.shenghuo.com/app/version?app_type=ios
+

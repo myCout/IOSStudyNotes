@@ -1,0 +1,24 @@
+1.安装
+Terminator 中输入：
+sudo gem install cocoapods --要翻墙的，不翻墙就一直没啥反应。要等一会。
+2.使用
+以导入AFNetworking为例：
+为了确定AFNetworking是否支持CocoaPods，可以用CocoaPods的搜索功能验证一下。在终端中输入：
+pod search AFNetworking   --几秒后，可以看到一些关于该类库的一些信息，也说明该类库支持CocosPods。
+cd到要添加类库的项目文件夹下，（CocoaPods为什么能下载AFNetworking呢，而不是下载其他类库呢？这个问题的答案是，有个文件来控制CocoaPods该下载什么。这个文件就叫做
+“Podfile”（注意，一定得是这个文件名，而且没有后缀）。你创建一个Podfile文件，然后在里面添加你需要下载的类库，也就是告诉CocoaPods，“某某和某某和某某某，快到碗里来！”。每个项目只需要一个Podfile文件。
+先创建这个神奇的PodFile。在终端中进入（cd命令）你项目所在目录，然后在当前目录下，利用vim创建Podfile）
+终端输入: vim Podfile   --用vim在该路径下打开一个叫做Podfile的文件，没有该文件则创建出来；
+输入: i 回车  --标示可以编辑了；
+输入: 
+platform :ios, '7.0'
+pod "AFNetworking", "~> 2.0"
+这两句文字的意思是，当前AFNetworking支持的iOS最高版本是iOS 7.0, 要下载的AFNetworking版本是2.0。
+先esc，然后输入:   :wq  --退出vim并保存当前文件的修改
+运行: pod install  --利用CocoPods下载AFNetworking类库
+执行完之后，会生成一个  项目名.xcworkspace文件（还多了另外一个文件“Podfile.lock”和一个文件夹“Pods”）。以后打开项目就用 .xcworkspace来打开； 
+
+总结一下就是：
+
+先在项目中创建Podfile，Podfile的内容是你想导入的类库。一般类库的原作者会告诉你导入该类库应该如何写Podfile；
+运行命令：$ pod install.

@@ -1,0 +1,61 @@
+xxxxxx.m文件中
+
++ (instancetype)sharedxxxxxx
+{
+    static xxxxxx *_sharedClient = nil;
+    static dispatch_once_t onceToken;//dispatch_onece 保证了blocks只能执行一次
+    dispatch_once(&onceToken, ^{
+        _sharedClient = [[xxxxxx alloc] init];
+    });
+    return _sharedClient;
+}
+
+Blocks 语法
+exp1:
+int(^BFunc)(int a)  函数调用 ------> int ret = BFunc(100);
+
+Blocks typedef 定义
+C语言函数指针typedef
+typedef int(*SumBlockT)(int a,int b);
+Blocks typedef 定义
+typedef int(^SumBlockT)(int a,int b);
+
+exp2:
+void (^myBlocks)(void)=NULL;
+myBlocks = ^(void){
+	NSLog(@"in blocks");
+}//给 myBlocks 赋值
+//调用
+myBlocks();
+
+int(^myBlocks2)(int a,int b)=^(int a,int b){
+	int c = a + b;
+	return c;
+};
+//调用
+int ret = myBlocks2(1,2);
+
+
+exp3:
+void (^BarkCallback)(Dog *thisDog,int count);//定义了一个blocks变量
+
+-(void)setBark:(void (^)(Dog *thisDog,int count))eachBark;//向外暴露一个函数 setBark;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

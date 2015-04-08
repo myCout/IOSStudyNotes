@@ -1,0 +1,185 @@
+ssh root@192.168.208.214   —链接手机   -------ssh root@172.18.130.2
+killall SpringBoard --重启手机
+xcrun --sdk iphoneos --show-sdk-path  --显示当前系统上安装的iossdk版本和路径
+THEOS_DEVICE_IP = 192.168.208.242    --在Makefile文件最上面添加，意思是指定安装的设备ip
+export THEOS=/opt/theos/      --相当于宏定义 但是电脑重启之后回失效
+echo $THEOS   --查看当前有无 $THEOS 定义
+sudo mv -f ~/Desktop/CydiaSubstrate /opt/theos/lib/libsubstrate.dylib   --将桌面上得文件CydiaSubstrate剪切到 后面的路径下，并命名为libsubstrate.dylib，原路径下若有这个libsubstrate.dylib文件，则覆盖掉
+
+sudo chmod 777 /opt/theos/bin/ldid --给ldid获取可读可写权限 (Permission denied 报这个错误的时候要执行下)
+设备上的文件获取权限:先cd到该文件路径下,然后输入 chmod 777 +该文件名    就可以获取到权限,跟mac上不同
+cd ~/Desktop/   -- 直接进入Desktop路径下
+
+砸壳步骤:
+	1.链接到手机  ssh root@172.18.130.2 
+	2.找到目标程序的路径  find /var/mobile/Applications/ -name MicroMessenger  --找到某个app的路径  手机的要先用命令行进入手机
+		exp:淘宝app路径 /var/mobile/Applications/6D31F4DA-FA89-464D-A68E-D7F6E9BB8CF3/Taobao2013.app/Taobao2013
+	3.cd到 放有dumpdecrypted.dylib的路径下 cd /var/tmp/    --dumpdecrypted.dylib 貌似每次都要copy下//dumpdecrypted.dylib 文件的生成在这篇文章中:http://bbs.iosre.com/forum.php?mod=viewthread&tid=7&extra=page%3D1
+	4.执行下面的
+	 	DYLD_INSERT_LIBRARIES=dumpdecrypted.dylib /var/mobile/Applications/6D31F4DA-FA89-464D-A68E-D7F6E9BB8CF3/Taobao2013.app/Taobao2013  ---开始砸淘宝的壳
+	5./var/tmp/  路径下会生成一个叫做 xxx.decrypted 的文件，这就是砸壳成功后得到的东西，导出到pc上面;(要重启下iTools，不然看不到生成的文件)
+	6.cd到放置 xxx.decrypted 文件的路径下 ，执行下面:
+		class-dump -H SOHUVideo.decrypted -o -SOHUVideo  ---用class-dump 分析 Taobao2013，得到对应的头文件
+		class-dump -H MicroMessenger.decrypted -o -MicroMessenger_head
+
+scp -r /Applications/Reveal.app/Contents/SharedSupport/iOS-Libraries/Reveal.framework root@192.168.208.242:/System/Library/Frameworks  
+-- scp -r /***/xxx   -- 要拷贝文件的路径 
+-- root@192.168.208.242:/System/Library/Frameworks --将上面的文件拷贝到这里，root是获取手机的权限，输入密码
+
+class-dump 步骤：
+将要分析的XXX.app 中包里面的XXX文件拷贝到文件夹下（我放在桌面为例），同样cd到该文件夹下，输入： class-dump -H SOHUVideo.decrypted -o -SOHUVideo 然后回车（XXX为你自己要分析的app的名字）；这样就会在桌面上生成一个文件夹，叫_XXX,里面就会有分析得到的app的所有头文件（没有加密过得app可以，和源文件有一点点区别）。
+
+class-dump -H qiyiiPhone -o -qiyiiPhone.h
+
+
+创建Theos步骤：
+1. cd到工程路径下（比如 /Users/user/Documents/IOSHack）；
+2.输入： /opt/theos/bin/nic.pl  --作用 启动NIC（new Instance Creator）
+	这一步可以先设置环境变量，然后在执行:
+		export THEOS=/opt/theos  --设置环境变量,每次重启之后都要设置~
+		$THEOS/bin/nic.pl --启动 NIC
+3.输入 9 回车  --选择模板
+4.输入工程名：*******;此时还要输入deb的名字（类似Bundle identifier）;然后还要输入作者名；//会生成一个该名称的文件夹，后面的make命令要cd到该路径下执行~
+5.这一步要输入tweak作用对象的bundle identifier（例如：com.apple.mobilephone--系统的电话模块.可以在应用IPA文件解压后得到的文件夹下iTunesMetadata.
+	   plist文件中找到。）
+6.Theos 要求制定tweak安装完成后要重启的应用，比如上面输入的bundle identifier为: com.apple.mobilephone,则这里输入进程名:mobilephone(
+	这一步书上有问题，作者已经勘误说明)
+7.以上六步会	创建好Theos工程，下面在该工程目录下执行make命令（编译），会报错，打开makefile文件，在最上面添加 
+  THEOS_DEVICE_IP = 172.18.130.2   --指定设备的ip
+  ARCHS = armv7     ------制定架构
+  TARGET = iPhone:7.1:4.3  -------采用7.1版本的sdk（即Xcode中的Base SDK），且发布对象为ios4.3及以上版本
+8.执行 make packgae（打包），(make package install 安装)其实就是先make再dpkg-deb
+9.常用的一些打印函数:object_getClassName(xxx) --将对象的类名用 char* 表示
+
+
+Cycript使用教程:
+1.ssh root@192.168.208.214   —链接手机
+2.ps -A | grep XXXX(SOHUVideo)  --获取xxxx（app的名字）的进程   -- ps ax | grep SpringBoard
+	exp:
+	1):ps -ef | grep Moji  --获取Moji的进程号  
+	2):cycript -p 682 --挂钩墨迹天气的进程，成功挂钩之后，通过UIApp.delegate 和 UIApp.keyWindow.rootViewController找到他的delegate和rootViewController;
+	3):UIApp.delegate  --输出Moji地delegate文件名字
+	4):UIApp.keyWindow.rootViewController  --找到墨迹天气的rootViewController，这里为ParentViewController
+	5):输入:
+		function printMethods(className) {
+			 var count = new new Type("I");
+			 var methods = class_copyMethodList(objc_getClass(className), count);
+			 var methodsArray = [];
+			 for(var i = 0; i < *count; i++) {
+			 var method = methods[i];
+			 methodsArray.push({selector:method_getName(method), implementation:method_getImplementation(method)});
+			 }
+			 free(methods);
+			 free(count);
+			 return methodsArray;
+		}
+	6):输入:printMethods(ParentViewController)  --会将ParentViewController里面的方法都打印出来，一大坨。。。
+	7):可以看到 ShowCamera 这个方法，下面模拟点击照相机事件:
+	8):[[[[[[UIApplication sharedApplication] keyWindow] subviews] objectAtIndex:0]nextResponder]ShowCamera]
+3.control + D
+
+//Cycript 书上例子记录
+1）:cycript -p SpringBoard --无输出
+2）:var alertView = [[UIAlertView alloc]initWithTitle:@"haoyiTest"message:@"HY"delegate:nil cancelButtonTitle:@"OK"otherButtonTitles:nil]
+--输出:#"<UIAlertView: 0x192d5f70; frame = (0 0; 0 0); opaque = NO; layer = <CALayer: 0x194db590>>"
+3):[alertView show] -- 此时手机上会出现 alertView
+4):[alertView release]
+
+var alertView = [[UIAlertView alloc] initWithTitle:@"HaoYi" message:@"HelloWordl" delegate:nil cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+
+验证某个函数是否被制定操作调用:
+1.exp
+	%hook SBScreenShotter
+	-(void)saveScreenshot:(BOOL)screenshot
+	{
+		%orig;
+		NSLog("saveScreenshot:is called");
+	}
+	%end
+2.将对应的plist文件的Filter设置为:com.apple.springboard;用Theos编译打包成deb，安装在设备上，重启下，出现锁屏界面时同时按下home+lock，然后打开终端，ssh进IOS
+输入:grep iOSRE /var/log/syslog  --没试过，不过看log信息应该就是这样~
+
+//解析函数参数
+description函数能够把对象的内容表示成一个 NSString   --用%@打印
+object_getClassName()函数能够把对象的类名表示成一个char* --用%s打印
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////
+删除Xcode证书命令行
+rm ~/Library/MobileDevice/Provisioning\ Profiles/*
+
+////////////////////////////////////////////////
+Git学习
+1.创建文件夹
+mkdir xxx;---路径为前面~ user$ 的路径；如果想创建到桌面，则先 cd到桌面，然后执行mkdir xxx;
+pwd ;--该命名行可以显示出当前目录
+2.通过 git init 命令把这个目录变成Git可以管理的仓库:
+git init ---打印出:Initialized empty Git repository in /Users/user/Desktop/learnGit/.git/
+
+用Xcode自带的工具创建Git
+//显示Finder里面的隐藏文件的命令行（执行完之后要重启Finder）
+defaults write com.apple.finder AppleShowAllFiles TRUE/FALSE
+killall Finder
+
+//如果你在项目创建时未创建git源，之后又想加上这个功能:
+1.切换到新项目的目录  exp: cd /Users/YOUR-USERNAME/Desktop/NoGitExample  
+2.输入:git init
+3.输入:git add .
+4.输入:git commit -m 'Initial commit'  --会输出一大坨东西表明git源创建好了
+5.回到Xcode，代开Source Controller菜单，会发现一切还是禁用，这时重启下Xcode就可以了
+
+
+苹果动态库和静态库
+框架（Framework）的类别
+大部分框架都是动态链接库的形式。因为只有苹果才能在iOS设备上安装动态库，所以我们无法创建这种类型的框架。
+静态链接库和动态库一样，只不过它是在编译时链接二进制代码，因此使用静态库不会有动态库那样的问题（即除了苹果谁也不能在iOS上使用动态库）。
+framework可以用bundle的方式来制作，不过不能动态加载，比.a文件的好处是能包含资源
+
+//pod命令
+创建这个神奇的PodFile。在终端中进入（cd命令）你项目所在目录，然后在当前目录下，利用vim创建Podfile，运行：
+$ vim Podfile
+pod search AFNetworking --查询 AFNetworking 是否支持 pod
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

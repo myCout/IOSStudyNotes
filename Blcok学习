@@ -1,0 +1,59 @@
+Blcok学习
+作用:blcok 封装了一段代码，可以在任何时候执行;block可以作为函数参数或者函数的返回值，而本身又可以带输入参数或者返回值，block在多线程、异步任务，集合排序、动画专场用的多。
+	block用来保存一段代码，标志:^,类似函数指针。
+--定义block变量没有返回值没有参数
+  void(^myBlock)() = ^{
+  		NSLog(@"------------");
+  };
+  //利用block变量调用block内部的代码
+  myblock(); //运行block
+
+  //定义一个blcok返回值为int函数的参数为int int
+  int(^sumBlcok)(int,int) = ^(int a,int b){
+  		return a + b;
+  };
+
+  int sum = sumBlcok(10,11);
+  NSLog(@"sum = %d",sum);
+
+  //利用typedef定义block来创建一个block变量
+  SumP sumBlcok1 = ^(int a,int b){
+  	return a - b;
+  };
+  int d = sumBlcok1(10,5);
+  NSLog(@"d = %d",d);
+
+在很多框架中，block越来越经常被用作回调函数，取代传统的回调方式。
+
+用block作为回调函数，可以使得程序员在写代码更顺畅，不用中途跑到另一个地方写一个回调函数，有时还要考虑这个回调函数放在哪里比较合适。
+采用block，可以在调用函数时直接写后续处理代码，将其作为参数传递过去，供其任务执行结束时回调。
+另一个好处，就是采用block作为回调，可以直接访问局部变量。比如我要在一批用户中修改一个用户的name，修改完成后通过回调更新对应用户的单元格UI。
+这时候我需要知道对应用户单元格的index，如果采用传统回调方式，要嘛需要将index带过去，回调时再回传过来；
+要嘛通过外部作用域记录当前操作单元格的index（这限制了一次只能修改一个用户的name）；
+要嘛遍历找到对应用户。而使用block，则可以直接访问单元格的index。
+
+1.Block的定义
+--声明和实现写在一起，就像 int a = 10;
+	int(^aBlock)(int,int) = ^(int num1,int num2){
+		return num1 * num2;
+	};
+--声明和实现分开，就像 int a; a = 10;
+	int(^aBlcok)(int,int);
+	aBlcok = ^(int num1,int num2){
+		return num1 * num2;
+	};
+2.Block的访问权限
+--block可以访问局部变量，但是不能修改
+	int a = 10;
+	int(^dBlock)(int) = ^(int num){
+		a++;//not work //会报编译错
+		return num*a;
+	};
+--不能修改的原因是在编译期间确定的，编译器编译的时候把a的值复制到block作为一个新变量（假设是a‘ = 10），此时a'和a是没有关系的。
+	这个地方就是函数中的值传递。如果要修改就要加关键字：__block或者static:
+	__block int a = 7;
+	int	(^dBlock)(int) = ^(int num){
+		a++;//work
+		return num*a;
+	};
+

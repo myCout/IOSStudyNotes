@@ -1,0 +1,138 @@
+.Pch文件在Xcode6 上的添加
+1.创建 xxx.pch 文件；
+2.Precompile Prefix Header的值设置为YES
+3.Prefix Header的路径 改为$(SRCROOT)/XXXX(工程名字)/XXXX(文件名字，一般和工程名相同).pch
+4.pch文件里面代码:
+#ifdef __OBJC__
+#import xxxxx
+#endif
+咸阳市秦都区建设路建设小区
+
+场景1：利用CocoaPods，在项目中导入AFNetworking类库
+AFNetworking类库在GitHub地址是：https://github.com/AFNetworking/AFNetworking
+为了确定AFNetworking是否支持CocoaPods，可以用CocoaPods的搜索功能验证一下。在终端中输入：
+$ pod search AFNetworking//搜索看是否支持
+先创建这个神奇的PodFile。在终端中进入（cd命令）你项目所在目录，然后在当前目录下，利用vim创建Podfile，运行：
+$ vim Podfile
+platform :ios, '7.0'
+pod "AFNetworking", "~> 2.0"
+//注意 这两句文字的意思是，当前AFNetworking支持的iOS最高版本是iOS 7.0, 要下载的AFNetworking版本是2.0。
+然后保存退出。vim环境下，保存退出命令是：
+:wq
+项目目录中，出现一个名字为Podfile的文件，而且文件内容就是你刚刚输入的内容。
+$ pod install 
+
+platform :ios, '7.0'
+pod "AFNetworking", "~> 2.0"  
+pod 'Reachability',  '~> 3.0.0'  
+pod 'JSONKit'
+pod 'ImagePlayerView'
+pod 'BlocksKit'
+pod 'MBProgressHUD','~>0.8'
+pod 'Masonry'//可以用来适配的一个库
+pod 'MMPlaceHolder'//可以实时显示尺寸
+pod 'BFKit'
+pod 'CocoaLumberjack'
+
+用法:
+包含头文件 #import "MMPlaceHolder.h"
+    	 UIView *sv = [UIView new];
+    	 [sv showPlaceHolder];
+
+pod 'BFKit'//BFKit对常用于开发的类进行了扩展，整合了多个常用的控件和开发所需要的功能，是一个通用性的类库。
+Import the file "BFKit.h"(如果是复制文件夹BFKit，则要添加依赖库AudioToolbox framework)
+
+pod 'CocoaLumberjack'//和插件XCodeColor 配合使用
+手动的话: 新建项目，将CocoaLumberjack拖入项目中;
+创建一个MyCommonLog.h 头文件
+		#import "DDLog.h"
+
+		#ifdef DEBUG
+			static const int ddLogLevel = DDLogLevelWarning;
+		#else
+			static const int ddLogLevel = DDLogLevelOff;
+		#endif
+ 这样就可以全局使用LogLevel；
+ 使用:头文件包含：#import <CocoaLumberjack/CocoaLumberjack.h>
+ 			   #import "LogCommon.h"
+
+- (void)viewDidLoad {//可以写在父类里面
+    [super viewDidLoad];
+    [DDLog addLogger:[DDTTYLogger sharedInstance] withLevel:ddLogLevel];// 初始化DDLog日志输出，在这里，我们仅仅希望在xCode控制台输出
+    [[DDTTYLogger sharedInstance] setColorsEnabled:YES];// 启用颜色区分
+    DDLogError(@"错误信息"); // 红色
+    DDLogWarn(@"警告"); // 橙色
+    DDLogInfo(@"提示信息"); // 默认是黑色
+    DDLogVerbose(@"详细信息"); // 默认是黑色
+ 	 [DDLog addLogger:[DDTTYLogger sharedInstance] withLevel:ddLogLevel];// 初始化DDLog日志输出，在这里，我们仅仅希望在xCode控制台输出
+    [[DDTTYLogger sharedInstance] setColorsEnabled:YES];// 启用颜色区分
+    DDLogError(@"错误信息"); // 红色
+    DDLogWarn(@"警告"); // 橙色
+    DDLogInfo(@"提示信息"); // 默认是黑色
+    DDLogVerbose(@"详细信息"); // 默认是黑色
+  }
+
+pod 'Masonry'//可以用来适配的一个库
+在Masonry中能够添加autolayout约束有三个函数
+- (NSArray *)mas_makeConstraints:(void(^)(MASConstraintMaker *make))block;
+- (NSArray *)mas_updateConstraints:(void(^)(MASConstraintMaker *make))block;
+- (NSArray *)mas_remakeConstraints:(void(^)(MASConstraintMaker *make))block;
+/*
+mas_makeConstraints 只负责新增约束 Autolayout不能同时存在两条针对于同一对象的约束 否则会报错 
+mas_updateConstraints 针对上面的情况 会更新在block中出现的约束 不会导致出现两个相同约束的情况
+mas_remakeConstraints 则会清除之前的所有约束 仅保留最新的约束
+三种函数善加利用 就可以应对各种情况了
+*/
+
+//快速的定义一个weakSelf
+#define WS(weakSelf)  __weak __typeof(&*self)weakSelf = self;//可以放在全局头文件里面
+
+使用：-(void)testViewInit{
+    WS(ws);
+    //从此以后基本可以抛弃CGRectMake了
+    UIView *sv = [UIView new];
+    sv.backgroundColor = [UIColor grayColor];
+    //在做autoLayout之前 一定要先将view添加到superview上 否则会报错
+    [self.view addSubview:sv];
+    //mas_makeConstraints就是Masonry的autolayout添加函数 将所需的约束添加到block中行了
+    [sv mas_makeConstraints:^(MASConstraintMaker *make) {
+        //将sv居中(很容易理解吧?)
+//        make.center.equalTo(ws.view);
+//        make.size.mas_equalTo(CGSizeMake(150, 300));
+        make.edges.equalTo(ws.view).with.insets(UIEdgeInsetsMake(64+10, 10, 49+10, 10));//以距离边框的值来设置View的大小
+        //将size设置成(300,300)
+//        make.size.mas_equalTo(CGSizeMake(150, 300));
+    }];
+     //让一个view略小于其superView(边距为10)
+    UIView *sv1 = [UIView new];
+    [sv1 showPlaceHolder];
+    sv1.backgroundColor = [UIColor redColor];
+    [sv addSubview:sv1];
+    [sv1 mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(sv).with.insets(UIEdgeInsetsMake(10, 10, 10, 10));
+    }];
+
+} 
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

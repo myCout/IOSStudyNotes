@@ -1,0 +1,150 @@
+%hook  --字面意思为 勾住
+指定需要hook的class，必须以%end结尾，如：
+
+%hook SpringBoard
+-(void)menuButtonDown:(id)down
+{
+	NSLog(@"你按下了home键!");
+	%orig;//调用menuButtonDown: 原始函数
+}
+%end
+
+这段代码的意思是：hook住SpringBoard类中得menuButtonDown:函数，先将"你按下了home键!"写入syslog，再执行函数的原始操作。
+
+%log
+该指令在 %hook内部使用，将函数的类名、参数等信息写入syslog，可以按%log([(<type>)<expr>,...])的格式追加其打印信息，如：
+
+%hook SpringBoard
+-(void)menuButtonDown:(id)down
+{
+	%log((NSSting*)@"iOSRE",(NSString*)@"Debug");
+	%orig;//调用menuButtonDown: 原始函数
+}
+%end
+
+%orig
+该指令在%hook内部使用，执行被hook的函数的原始代码，如:
+
+%hook SpringBoard
+-(Bool)launchApplicationWithIdentifier:(id)identifier suspended:(Bool)suspended
+{
+	NSLog(@"启动%@",identifier);
+	return %orig;
+}
+%end
+如果去掉%orig，那么原始函数不会得到执行，例如:
+
+%hook SpringBoard
+-(void)menuButtonDown:(id)down
+{
+	//按下home键没有反应，因为没有执行原始的函数，即没有添加 %orig
+}
+%end
+
+还可以利用%orig跟改下原始函数的参数，例如:
+
+%hook SpringBoard
+-(Bool)launchApplicationWithIdentifier:(id)identifier suspended:(Bool)suspended
+{
+	NSLog(@"启动MobilePhone");
+	return %orig(@"com.apple.mobilephone",suspended);
+}
+%end
+这样一来，只要SpringBoard调用launchApplicationWithIdentifier:suspended:函数来启动某个应用程序，实际启动的都是电话程序，可以用来恶作剧。。。
+
+%group
+该指令用于将%hook分组，便于代买管理以及按条件初始化分组，必须以%end结尾；一个%group可以包含多个%hook，所有不输入某个自定义组的%hook都会被隐式归类到%group_ungrouped中。例如：
+
+%group iOS5Hook
+	%hook CKConversationList
+	-(id)******** :(id)****** creat:(BOOL)create service:(id)service
+	{
+		id result = %orig;
+		NSLog(@"此函数存在于IOS5中，IOS6中没有")
+	}
+	%end
+%end
+
+%group iOS6Hook
+	%hook CKConversationList
+	-(id)******** :(id)****** creat:(BOOL)create service:(id)service
+	{
+		id result = %orig;
+		NSLog(@"此函数存在于IOS6中，IOS5中没有")
+	}
+	%end
+%end
+
+%group 必须配合 %init实用才能生效，%group相当于声明或是初始化，%init才是对它的调用
+
+%init
+该指令用于初始化某个%group，必须在%hook或%ctor内调用。如果带参数，则初始化制定的数组，如果不带参数，则初始化_ungrouned,如:
+
+%hook SpringBoard
+-(void)applicationDidFinishLaunching:(id)application
+{
+	%orig;
+	%init;//等同于%init(_ungrouped)
+	if(************)
+	{
+		%init(iOS5Hook);
+	}else{
+		%init(iOS6Hook);
+	}
+}
+
+%ctor
+tweak 的构造函数完成初始化工作；如果不显示定义，则Theos会自动生成一个%ctor，并在其中调用%init(_ungrouped).因此，程序
+%hook SpringBoard
+-(void)reboot
+{
+	NSLog(@"打雷啦，下雨啦，收衣服啦!");
+	%orig;
+}
+可以成功生效，疑问Theos伴我们隐式定义了：
+%ctor
+{
+	%init(_ungrouped);
+}
+
+%ctor 不用以%end结尾
+
+%new
+在%hook内部使用，为一个现有的class添加新函数，功能与class_addMethod相同。用法是:
+%hook SpringBoard
+%new
+-(void)namespaceNewMethod
+{
+	NSLog(@"新添加了一个SpringBoard函数！")；
+}
+%end
+
+%c
+该指令的作用等同于objc_getClass(),即动态获取一个类的定义，在%hook或%ctor内使用。
+
+Logos的预处理指令还有 %subclass 和 %config，但都比较少用。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

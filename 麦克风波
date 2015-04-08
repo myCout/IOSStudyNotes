@@ -1,0 +1,64 @@
+麦克风波是指什么？一般都用音量显示
+- (void)volumnDetect:(NSTimer *)timer
+{
+    [self.av_recorder updateMeters];
+    double peak = pow(10, (0.05 * [self.av_recorder peakPowerForChannel:0]));
+    NSLog(@"%f",peak);
+    if (peak <= 0.0435) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_0"];
+    } else if (peak <= 0.087) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_1"];
+    } else if (peak <= 0.1305) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_2"];
+    } else if (peak <= 0.174) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_3"];
+    } else if (peak <= 0.2175) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_4"];
+    } else if (peak <= 0.261) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_5"];
+    } else if (peak <= 0.3045) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_6"];
+    } else if (peak <= 0.348) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_7"];
+    } else if (peak <= 0.3915) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_8"];
+    } else if (peak <= 0.435) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_9"];
+    } else if (peak <= 0.4785) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_10"];
+    } else if (peak <= 0.522) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_11"];
+    } else if (peak <= 0.5655) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_12"];
+    } else if (peak <= 0.609) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_13"];
+    } else if (peak <= 0.6525) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_14"];
+    } else if (peak <= 0.696) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_15"];
+    } else if (peak <= 0.7395) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_16"];
+    } else if (peak <= 0.783) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_17"];
+    } else if (peak <= 0.8265) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_18"];
+    } else if (peak <= 0.87) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_19"];
+    } else if (peak <= 0.9135) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_20"];
+    } else if (peak <= 0.957) {
+        self.animeIV.image = [UIImage imageNamed:@"mic_21"];
+    } else {
+        self.animeIV.image = [UIImage imageNamed:@"mic_22"];
+    }
+}
+
+1）“长按下按钮的时候，屏幕中央出现一个“弹窗”,松开按钮的时候。对话框消失。”
+
+这个效果的实现。4楼 @jadexxx 同学说的完美！补充一下：找了一个*hud(推荐 MBProgressHUD ）实现，因为里面需要显示当前音量。所以再在hud里面实现一个customview就Ok了。
+
+2）关于录制音频格式：现在使用 wav。 这个目前看。音频质量有保证。体积小。
+
+3）音频传输：使用wav 转 Speex 在传输。 体积的递减，相当惊人。
+
+4）音频的播放：speex 转  wav 在播放。 
